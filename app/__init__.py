@@ -46,24 +46,24 @@ def configure_logging(app):
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(verbose_formatter())
 
-    if (app.config['APP_ENV'] == app.config['APP_ENV_TESTING']) or (
-            app.config['APP_ENV'] == app.config['APP_ENV_DEVELOPMENT']):
-        console_handler.setLevel(logging.DEBUG)
-        handlers.append(console_handler)
-    elif app.config['APP_ENV'] == app.config['APP_ENV_PRODUCTION']:
-        console_handler.setLevel(logging.INFO)
-        handlers.append(console_handler)
+    # if (app.config['APP_ENV'] == app.config['APP_ENV_TESTING']) or (
+    #         app.config['APP_ENV'] == app.config['APP_ENV_DEVELOPMENT']):
+    #     console_handler.setLevel(logging.DEBUG)
+    #     handlers.append(console_handler)
+    # elif app.config['APP_ENV'] == app.config['APP_ENV_PRODUCTION']:
+    #     console_handler.setLevel(logging.INFO)
+    #     handlers.append(console_handler)
 
-        # mail_handler = SMTPHandler((app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
-        #                            app.config['DONT_REPLY_FROM_EMAIL'],
-        #                            app.config['ADMINS'],
-        #                            '[Error][{}] La aplicación falló'.format(app.config['APP_ENV']),
-        #                            (app.config['MAIL_USERNAME'],
-        #                             app.config['MAIL_PASSWORD']),
-        #                            ())
-        # mail_handler.setLevel(logging.ERROR)
-        # mail_handler.setFormatter(mail_handler_formatter())
-        # handlers.append(mail_handler)
+    #     # mail_handler = SMTPHandler((app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
+    #     #                            app.config['DONT_REPLY_FROM_EMAIL'],
+    #     #                            app.config['ADMINS'],
+    #     #                            '[Error][{}] La aplicación falló'.format(app.config['APP_ENV']),
+    #     #                            (app.config['MAIL_USERNAME'],
+    #     #                             app.config['MAIL_PASSWORD']),
+    #     #                            ())
+    #     # mail_handler.setLevel(logging.ERROR)
+    #     # mail_handler.setFormatter(mail_handler_formatter())
+    #     # handlers.append(mail_handler)
 
     for l in loggers:
         for handler in handlers:
