@@ -5,7 +5,7 @@ apispec-webframeworks==0.5.2
 attrs==23.1.0
 blinker==1.6.3
 click==8.1.7
-Flask==3.0.0
+Flask==2.3.3
 flask-marshmallow==0.15.0
 Flask-Migrate==4.0.5
 Flask-RESTful==0.3.10
