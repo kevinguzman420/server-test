@@ -4,6 +4,10 @@ from flask_restful import Api
 from app.ext import migrate, ma
 from app.db import db
 
+from flask_cors import CORS
+
+cors = CORS()
+
 import os, logging
 
 def create_app(settings_module):
@@ -20,6 +24,8 @@ def create_app(settings_module):
     db.init_app(app)
     ma.init_app(app)
     migrate.init_app(app, db)
+
+    cors.init_app(app, supports_credentials=True, origins=["*"])
 
     Api(app)
 
