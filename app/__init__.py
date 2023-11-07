@@ -1,14 +1,18 @@
 from flask import Flask
 from flask_restful import Api
+from flask_cors import CORS
+from flask_socketio import SocketIO
+
+import logging
+import os
 
 from app.ext import migrate, ma
 from app.db import db
 
-from flask_cors import CORS
-
 cors = CORS()
 
-import os, logging
+socketio = SocketIO()
+
 
 def create_app(settings_module):
     app = Flask(__name__, instance_relative_config=True)
@@ -27,6 +31,8 @@ def create_app(settings_module):
 
     cors.init_app(app, supports_credentials=True, origins=["*"])
 
+    socketio.init_app(app, cors_allowed_origins="http://localhost:5173")
+
     Api(app)
 
     # blueprints
@@ -42,12 +48,12 @@ def create_app(settings_module):
 
     return app
 
+
 def configure_logging(app):
     del app.logger.handlers[:]
 
     loggers = [app.logger,]
     handlers = []
-
 
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(verbose_formatter())
@@ -77,11 +83,13 @@ def configure_logging(app):
         l.propagate = False
         l.setLevel(logging.DEBUG)
 
+
 def verbose_formatter():
     return logging.Formatter(
         "[%(asctime)s.%(msecs)d]\t %(levelname)s \t[%(name)s.%(funcName)s:%(lineno)d]\t %(message)s",
         datefmt="%d/%m/%Y %H:%M:%S",
     )
+
 
 def mail_handler_formatter():
     return logging.Formatter(
@@ -98,4 +106,3 @@ def mail_handler_formatter():
         ''',
         datefmt='%d/%m/%Y %H:%M:%S'
     )
-

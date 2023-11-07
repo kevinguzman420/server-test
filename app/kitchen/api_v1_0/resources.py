@@ -1,4 +1,5 @@
 from app.db import db
+from sqlalchemy import select, distinct, text
 from app.kitchen.api_v1_0.schemas import MenuSchema, ExtrasCategorySchema, ExtrasSchema, OrderByCustomerSchema
 from app.users.models import Users
 from app.kitchen.models import Order, OrderMenu, Menu, ExtrasCategory, Extras, OrderMenuExtras, StatusOrder
@@ -7,8 +8,14 @@ from flask import request, jsonify, current_app
 from flask_restful import Api, Resource
 from datetime import date
 import logging
+import sqlalchemy
+import json
+
+from flask_socketio import emit
+from app import socketio
 
 from sqlalchemy import text
+
 
 # blueprints
 
@@ -155,35 +162,86 @@ api.add_resource(KitchenOrdersResource, '/kitchen/orders',
                  endpoint="kitchen_orders")
 
 
+# engine = sqlalchemy.create_engine(
+#     current_app.config["SQLALCHEMY_DATABASE_URI"])
+
+# # Crea una conexión a la base de datos
+# connection = engine.connect()
+
+
 class KitchenOrdersByCustomerResource(Resource):
-    def get(self):
-        # with current_app.app_context():
-        #     sql_query = text('SELECT * FROM order;')
-        #     res = db.session.execute(sql_query)
-        #     print(res)
 
-        return jsonify(message="It Works!", status_code=200)
-
-        # results = Order.query.filter_by(client_id=1).join(OrderMenu).filter(
-        #     OrderMenu.order_id == Order.id).all().to_json()
-
-        # result_json = []
-
-        # print(results)
-
-        # for order, order_menu, menu in results:
-        #     order_dict = {
-        #         'order_id': order.id,
-        #         'client_id': order.client_id,
-        #         'status_order_id': order.status_order_id,
-        #         'menu_id': menu.id,
-        #         'menu_name': menu.name,
-        #         'quantity': order_menu.quantity
-        #     }
-        #     result_json.append(order_dict)
-
-        # return jsonify(result_json)
+    def get(self, clientId):
+        results = Order.query.filter_by(client_id=clientId).all()
+        orders = objetIntoJson(results)
+        return jsonify(orders=orders)
 
 
 api.add_resource(KitchenOrdersByCustomerResource,
-                 "/kitchen/orders-by-customer", endpoint="orders_by_customer")
+                 "/kitchen/orders-by-customer/<int:clientId>", endpoint="orders_by_customer")
+
+
+class KitchenOrdersUpdateOrderResource(Resource):
+    def put(self, orderId, orderStatus):
+        order = Order.get_by_id(orderId)
+        order.status_order_id = orderStatus
+        order.save()
+        return jsonify(message="Order updated!", status_code=200)
+
+
+api.add_resource(KitchenOrdersUpdateOrderResource,
+                 "/kitchen/orders/update-status/<int:orderId>/<int:orderStatus>", endpoint="orders_update-order-status")
+
+# func
+
+
+def objetIntoJson(dataObject):
+    # Convierte los resultados en un formato JSON
+    orders = []
+    order_headers = []
+    for result in dataObject:
+        order = {
+            "id": result.id,
+            # "date": result.date,
+            "total": result.total,
+            "status_order_id": result.status_order_id,
+            "client_id": result.client_id
+        }
+        order_body = []
+        for itemmenu in result.order_menu:
+            menu = {
+                "id": itemmenu.id,
+                "quantity": itemmenu.quantity,
+                "subtotal": itemmenu.subtotal,
+                "image": itemmenu.menu.image,
+                "description": itemmenu.menu.description,
+                "price": itemmenu.menu.price,
+                "menu_name": itemmenu.menu.name
+            }
+            order_body.append(menu)
+        order["body"] = order_body
+        orders.append(order)
+    return orders
+
+
+clientId = 1
+# socket
+
+
+@socketio.on('request-customer-orders')
+def get_custormer_orders():
+    # clientId should be in a session to get it anywhere
+    results = Order.query.filter_by(client_id=clientId).all()
+    orders = objetIntoJson(results)
+
+    emit("get-customer-orders", {"orders": orders})
+
+
+@socketio.on('update-customer-order-status')
+def update_custormer_order_status(data):
+    order = Order.get_by_id(data["orderId"])
+    order.status_order_id = data["newOrderStatus"]
+    order.save()
+
+    get_custormer_orders()
+    # emit("request-customer-orders")
