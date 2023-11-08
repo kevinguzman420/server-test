@@ -1,34 +1,30 @@
-from app.db import db
-from sqlalchemy import select, distinct, text
-from app.kitchen.api_v1_0.schemas import MenuSchema, ExtrasCategorySchema, ExtrasSchema, OrderByCustomerSchema
-from app.users.models import Users
-from app.kitchen.models import Order, OrderMenu, Menu, ExtrasCategory, Extras, OrderMenuExtras, StatusOrder
-from . import kitchen_bp
 from flask import request, jsonify, current_app
 from flask_restful import Api, Resource
+from flask_socketio import emit
+from flask_jwt_extended import jwt_required
 from datetime import date
 import logging
 import sqlalchemy
 import json
 
-from flask_socketio import emit
-from app import socketio
-
-from sqlalchemy import text
-
 
 # blueprints
+from . import kitchen_bp
 
 # models
+from app.users.models import Users
+from app.kitchen.models import Order, OrderMenu, Menu, ExtrasCategory, Extras, OrderMenuExtras, StatusOrder
 
 # schemas
+from app.kitchen.api_v1_0.schemas import MenuSchema, ExtrasCategorySchema, ExtrasSchema, OrderByCustomerSchema
 
 # misc
+from app import socketio
 
 logger = logging.getLogger(__name__)
 api = Api(kitchen_bp)
 
-# status order | postman
+# status order | postman | user
 
 
 class KitchenStatusOrderResource(Resource):
@@ -121,10 +117,11 @@ class KitchenMenuResource(Resource):
 
 api.add_resource(KitchenMenuResource, "/kitchen/menu", endpoint="kitchen_menu")
 
-# orders
+# orders | customer
 
 
 class KitchenOrdersResource(Resource):
+    @jwt_required()
     def post(self):
         # save the order
         total = 0
@@ -162,15 +159,9 @@ api.add_resource(KitchenOrdersResource, '/kitchen/orders',
                  endpoint="kitchen_orders")
 
 
-# engine = sqlalchemy.create_engine(
-#     current_app.config["SQLALCHEMY_DATABASE_URI"])
-
-# # Crea una conexión a la base de datos
-# connection = engine.connect()
-
-
+# get order by customer | customer
 class KitchenOrdersByCustomerResource(Resource):
-
+    @jwt_required()
     def get(self, clientId):
         results = Order.query.filter_by(client_id=clientId).all()
         orders = objetIntoJson(results)
@@ -180,12 +171,23 @@ class KitchenOrdersByCustomerResource(Resource):
 api.add_resource(KitchenOrdersByCustomerResource,
                  "/kitchen/orders-by-customer/<int:clientId>", endpoint="orders_by_customer")
 
+# update status order | user
+
 
 class KitchenOrdersUpdateOrderResource(Resource):
     def put(self, orderId, orderStatus):
         order = Order.get_by_id(orderId)
         order.status_order_id = orderStatus
         order.save()
+
+        # change the hardcoded client_id
+        # results = Order.query.filter_by(client_id=1).all()
+        # orders = objetIntoJson(results)
+        # socketio.emit("get-customer-orders",
+        #               {"orders": orders}, namespace="/customer-orders")
+
+        get_custormer_orders()
+
         return jsonify(message="Order updated!", status_code=200)
 
 
@@ -228,20 +230,11 @@ clientId = 1
 # socket
 
 
-@socketio.on('request-customer-orders')
+@socketio.on('message', namespace="/customer-orders")
 def get_custormer_orders():
     # clientId should be in a session to get it anywhere
     results = Order.query.filter_by(client_id=clientId).all()
     orders = objetIntoJson(results)
 
-    emit("get-customer-orders", {"orders": orders})
-
-
-@socketio.on('update-customer-order-status')
-def update_custormer_order_status(data):
-    order = Order.get_by_id(data["orderId"])
-    order.status_order_id = data["newOrderStatus"]
-    order.save()
-
-    get_custormer_orders()
-    # emit("request-customer-orders")
+    emit("get-customer-orders", {"orders": orders},
+         namespace="/customer-orders", broadcast=True)

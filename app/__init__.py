@@ -6,12 +6,12 @@ from flask_socketio import SocketIO
 import logging
 import os
 
-from app.ext import migrate, ma
+from app.ext import migrate, ma, jwt
 from app.db import db
 
 cors = CORS()
 
-socketio = SocketIO()
+socketio = SocketIO(logger=False, engineio_logger=False)
 
 
 def create_app(settings_module):
@@ -32,6 +32,8 @@ def create_app(settings_module):
     cors.init_app(app, supports_credentials=True, origins=["*"])
 
     socketio.init_app(app, cors_allowed_origins="http://localhost:5173")
+
+    jwt.init_app(app)
 
     Api(app)
 
