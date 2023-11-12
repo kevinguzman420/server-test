@@ -7,19 +7,17 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 # JWT
 JWT_SECRET_KEY = "so-secret"
 # to ensure the cookie set in http. Enable in production to https
-# JWT_COOKIE_SECURE = False
-# JWT_ACCESS_COOKIE_PATH = "/api/"
-# JWT_TOKEN_LOCATION = "cookies"
-# JWT_COOKIE_CSRF_PROTECT = True # set to get csrf double submit protection.
-# JWT_COOKIE_SAMESITE = None
-# JWT_ACCESS_COOKIE_NAME = "token_cookie"
-# JWT_REFRESH_COOKIE_PATH = "/api/token/refresh"
-# JWT_COOKIE_DOMAIN = "localhost"
-
+JWT_COOKIE_SECURE = True
+JWT_COOKIE_SAMESITE = "Lax"
 JWT_TOKEN_LOCATION = ['cookies']
-JWT_ACCESS_COOKIE_NAME = 'my-access-token'
-JWT_ACCESS_COOKIE_PATH = '/'
-JWT_ACCESS_COOKIE_DOMAIN = 'localhost'
+
+SESSION_COOKIE_HTTPONLY=False
+
+# BASE URLS
+DEV_BASE_URL = "https://localhost:5173"
+PROD_BASE_URL = "https://domainname.com"
+
+BASE_URL = ""
 
 # ENVIRONMENTS
 APP_ENV_DEVELOPMENT = "DEVELOPMENT"
