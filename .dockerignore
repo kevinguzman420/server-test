@@ -1,0 +1,12 @@
+#PYTHON
+__pycache__/
+
+# IDE
+*.vscode
+
+# ENV
+venv/
+
+# HEROKU
+Procfile
+runtime.txt

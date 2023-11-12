@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, current_app
 from flask_restful import Api
 from flask_cors import CORS
 from flask_socketio import SocketIO
@@ -29,9 +29,18 @@ def create_app(settings_module):
     ma.init_app(app)
     migrate.init_app(app, db)
 
-    cors.init_app(app, supports_credentials=True, origins=["*"])
+    cors_config = {
+        # Puedes especificar tus orígenes permitidos aquí en lugar de "*"
+        "origins": [app.config["BASE_URL"]],
+        "methods": ["GET", "POST", "PUT", "DELETE"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True
+    }
+    cors.init_app(app, supports_credentials=True, origins=["*"]) # works!
+    # cors.init_app(app, resources={r"/*": cors_config})
 
-    socketio.init_app(app, cors_allowed_origins="http://localhost:5173")
+    socketio.init_app(app, cors_allowed_origins=app.config["BASE_URL"])
+    # socketio.init_app(app, cors_allowed_origins="*")
 
     jwt.init_app(app)
 

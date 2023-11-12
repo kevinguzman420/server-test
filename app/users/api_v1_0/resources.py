@@ -56,7 +56,7 @@ class UsersSigninResource(Resource):
             response = jsonify({"msg": "login successful"})
             set_access_cookies(response, access_token)
             # set_refresh_cookies(response, refresh_token)
-            # response.headers['Access-Control-Allow-Credentials'] = True
+            # response.headers['Access-Control-Allow-Credentials'] = "true"
             return response
         return jsonify(message="User doesn't exits", status_code=401)
 
@@ -88,8 +88,7 @@ api.add_resource(UsersChangeRolResource,
 
 
 class TestResource(Resource):
-
-    @jwt_required()
+    # @jwt_required()
     def get(self):
         return jsonify(
             id=current_user.id,
@@ -99,7 +98,7 @@ class TestResource(Resource):
         )
 
 
-api.add_resource(TestResource, "/who_am_i", endpoint="test")
+api.add_resource(TestResource, "/test", endpoint="test")
 
 
 @jwt.user_identity_loader
