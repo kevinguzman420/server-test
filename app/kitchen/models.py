@@ -58,7 +58,6 @@ class Menu(db.Model, BaseModelMixin):
     price = db.Column(db.Float, nullable=False)
     image = db.Column(db.Text, nullable=True)
 
-    # order_menu = db.relationship('OrderMenu', backref="Menu", lazy=True)
     order_menu = db.relationship('OrderMenu', back_populates="menu")
 
 # extras

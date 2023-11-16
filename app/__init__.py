@@ -36,8 +36,8 @@ def create_app(settings_module):
         "allow_headers": ["Content-Type", "Authorization"],
         "supports_credentials": True
     }
-    cors.init_app(app, supports_credentials=True, origins=["*"]) # works!
-    # cors.init_app(app, resources={r"/*": cors_config})
+    # cors.init_app(app, supports_credentials=True, origins=["*"]) # works!
+    cors.init_app(app, resources={r"/*": cors_config})
 
     socketio.init_app(app, cors_allowed_origins=app.config["BASE_URL"])
     # socketio.init_app(app, cors_allowed_origins="*")

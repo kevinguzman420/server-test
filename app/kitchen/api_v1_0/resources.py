@@ -104,6 +104,7 @@ api.add_resource(KitchenExtrasByExtrasCategoryResource,
 
 
 class KitchenMenuResource(Resource):
+    @jwt_required()
     def get(self):
         menus = Menu.get_all()
         menus = MenuSchema(many=True).dump(menus)

@@ -9,11 +9,11 @@ class UsersTestCase(BaseTestClass):
         with self.app.app_context():
             rol = Rol.get_by_id(1)
             # user
-            user_data = {"username": "KevinGuzman", "email": "sevencode@outlook.es", "rol_id": 1}
+            user_data = {"username": "username", "email": "email@example.com", "rol_id": 1}
             user = Users(**user_data)
             user.generate_password("test")
             user.save()
-            self.assertEqual("KevinGuzman", user.username)
+            self.assertEqual("username", user.username)
             self.assertEqual(1, user.rol_id)
     
     def test_users_change_rol(self):
@@ -24,11 +24,11 @@ class UsersTestCase(BaseTestClass):
             rol.save()
             self.assertEqual(2, rol.id)
 
-            user_data = {"username": "KevinGuzman", "email": "sevencode@outlook.es", "rol_id": 1}
+            user_data = {"username": "username1", "email": "email2@example.com", "rol_id": 1}
             user = Users(**user_data)
             user.generate_password("test")
             user.save()
-            self.assertEqual("KevinGuzman", user.username)
+            self.assertEqual("username1", user.username)
             self.assertEqual(1, user.rol_id)
 
             user = Users.get_by_id(1)

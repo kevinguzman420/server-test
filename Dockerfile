@@ -17,8 +17,8 @@ COPY . .
 ENV FLASK_APP entrypoint.py
 ENV APP_SETTINGS_MODULE config.dev
 
-EXPOSE 8000
+EXPOSE 5000
 
 # CMD [ "flask", "run", "--host=0.0.0.0", "--port=5000", "--debug" ] # works!
 # CMD ["gunicorn", "--bind", "0.0.0.0:8000", "entrypoint:app"] # works!
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "-w", "4", "-t", "60", "entrypoint:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "-w", "4", "-t", "60", "entrypoint:app"]
